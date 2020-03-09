@@ -3,6 +3,7 @@ package be.vdab.groenetenen.services;
 import be.vdab.groenetenen.domain.Filiaal;
 import be.vdab.groenetenen.exceptions.FiliaalHeeftNogWerknemersException;
 import be.vdab.groenetenen.repositories.FiliaalRepository;
+import be.vdab.groenetenen.restservices.FilialenModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,5 +40,11 @@ public class DefaultFiliaalService implements FiliaalService{
     @Override
     public void update(Filiaal filiaal){
         filiaalRepository.save(filiaal);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Filiaal> findAll(){
+        return filiaalRepository.findAll();
     }
 }

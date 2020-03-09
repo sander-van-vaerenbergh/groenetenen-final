@@ -4,12 +4,17 @@ import be.vdab.groenetenen.domain.Filiaal;
 import be.vdab.groenetenen.exceptions.FiliaalHeeftNogWerknemersException;
 import be.vdab.groenetenen.exceptions.FiliaalNietGevondenException;
 import be.vdab.groenetenen.services.FiliaalService;
+import org.springframework.hateoas.Link;
+
+import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.ExposesResourceFor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.net.URI;
 import java.util.Optional;
 
 @RestController
@@ -17,14 +22,16 @@ import java.util.Optional;
 @ExposesResourceFor(Filiaal.class)
 public class FiliaalRestController {
     private final FiliaalService filiaalService;
-    FiliaalRestController(FiliaalService filiaalService){
+    private final EntityLinks entityLinks;
+    FiliaalRestController(FiliaalService filiaalService, EntityLinks entityLinks) {
         this.filiaalService = filiaalService;
+        this.entityLinks = entityLinks;
     }
 
     @GetMapping("{filiaal}")
-    Filiaal get(@PathVariable Optional<Filiaal> filiaal){
+    FiliaalModel get(@PathVariable Optional<Filiaal> filiaal){
         if (filiaal.isPresent()){
-            return filiaal.get();
+            return new FiliaalModel(filiaal.get(), entityLinks);
         }
         throw new FiliaalNietGevondenException();
     }
@@ -49,8 +56,14 @@ public class FiliaalRestController {
     }
 
     @PostMapping
-    void create(@RequestBody @Valid Filiaal filiaal){
+    @ResponseStatus(HttpStatus.CREATED)
+   public HttpHeaders create(@RequestBody @Valid Filiaal filiaal){
         filiaalService.create(filiaal);
+        HttpHeaders headers = new HttpHeaders();
+        Link link =
+                entityLinks.linkToItemResource(Filiaal.class, filiaal.getId());
+        headers.setLocation(URI.create(link.getHref()));
+        return headers;
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -67,5 +80,10 @@ public class FiliaalRestController {
     @PutMapping("{id}")
     void update(@RequestBody @Valid Filiaal filiaal){
         filiaalService.update(filiaal);
+    }
+
+    @GetMapping
+    FilialenModel findAll(){
+        return new FilialenModel(filiaalService.findAll(), entityLinks);
     }
 }
