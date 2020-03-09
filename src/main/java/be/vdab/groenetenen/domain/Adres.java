@@ -1,7 +1,6 @@
 package be.vdab.groenetenen.domain;
 
 import be.vdab.groenetenen.constraints.Postcode;
-import org.hibernate.validator.constraints.Range;
 
 import javax.persistence.Embeddable;
 import javax.validation.constraints.NotBlank;
